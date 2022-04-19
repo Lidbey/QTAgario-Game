@@ -15,17 +15,23 @@ MainClass::MainClass(int port, QWidget *parent)
     ui->setupUi(this);
     qApp->installEventFilter(this);
 
-    qDebug() << server.listen(QHostAddress::Any, port);
+    //startuje serwer(zwraca true/false, ale narazie to ignoruje, pozniej mozna ogarnac aby wyskoczyl box gdy false)
+    server.listen(QHostAddress::Any, port);
 
+    //tworze scene
     scene=new QGraphicsScene();
+
+    //wielkosc sceny
     scene->setSceneRect(0, 0, RATIO*WIDTH, RATIO*HEIGHT);
 
+    //ustawianie parametrow sceny
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->scale(1.30/RATIO, 1.30/RATIO);
 
+    //tworzenie krop poczatkowych i dodawanie na scene
     for(int i=0; i<START_DOTS; i++)
     {
         Dot* dot=new Dot();
@@ -34,8 +40,11 @@ MainClass::MainClass(int port, QWidget *parent)
         dotsData << dot->pos();
     }
 
+    //czas trwania petli programu (25ms aktualnie)
     timer.start(25);
+    //i sygnal aby GameLoop byl wywolywany co 25ms
     connect(&timer, &QTimer::timeout, this, &MainClass::gameLoop);
+    //sygnal ktory wywoluje newConnection gdy ktos sie podlaczy do serwera
     connect(&server, &QTcpServer::newConnection, this, &MainClass::newConnection);
 }
 
@@ -44,46 +53,47 @@ MainClass::~MainClass()
     delete ui;
 }
 
-bool MainClass::eventFilter(QObject* target, QEvent* event)
-{
-    if(event->type()==QEvent::KeyPress)
-    {
-        keysClicked.insert(static_cast<QKeyEvent*>(event)->key());
-    }
-    else if(event->type()==QEvent::KeyRelease)
-        keysClicked.remove(static_cast<QKeyEvent*>(event)->key());
 
-    return QWidget::eventFilter(target, event);
-}
-
+//petla programu(wywolywana co n ms)
 void MainClass::gameLoop()
 {
+
+    //dla kazdego polaczonego socketa:
     for(int i=connectedSockets.length()-1; i>=0; i--)
     {
+        //pobierz gracza od polaczonego socketa
         Player* player = connectedSockets[i]->getPlayer();
         if(player->dead())
         {
             connectedSockets[i]->getSocket()->disconnectFromHost();
             continue;
         }
+        //jesli akcja jest poprawna to ja wykonaj
         if(connectedSockets[i]->actionValid())
         {
             connectedSockets[i]->doAction();
         }
+
+        //2 razy na 200 iteracji wywolaj player->minusSize() czyli po prostu obniz mu wielkosc
         if(rand()%200<2)
         {
             player->minusSize();
         }
+
+        //zupdatuj gracza na scenie
         player->update();
     }
 
+    //kolizje
     for(int j=0; j<connectedSockets.length(); j++)
     {
         Player* player = connectedSockets[j]->getPlayer();
         if(!player || player->dead()) continue;
         QList<QGraphicsItem*> colliding=scene->collidingItems(player);
+
         for(int i=0; i<colliding.length(); i++)
         {
+            //kolizja z kropkami
             if(dynamic_cast<Dot*>(colliding[i])!=nullptr)
             {
                 dotsData.removeOne(colliding[i]->pos());
@@ -91,6 +101,8 @@ void MainClass::gameLoop()
                 delete colliding[i];
                 player->addSize();
             }
+
+            //kolizja z graczami
             if(dynamic_cast<Player*>(colliding[i])!=nullptr)
             {
                 Player* player = dynamic_cast<Player*>(colliding[i]);
@@ -125,6 +137,7 @@ void MainClass::gameLoop()
         }
     }
 
+    // tworzenie nowej kropki
     if(rand()%100<10)
     {
         if(scene->items().length()<5000)
@@ -133,6 +146,7 @@ void MainClass::gameLoop()
             scene->addItem(dot);
             dot->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
             dotsData << dot->pos();
+            //sprawdzanie czy kropka koliduje z graczami, jesli tak to usun ja
             for(int i=0; i<connectedSockets.length(); i++)
             {
                 if(connectedSockets[i]->getPlayer()->collidesWithItem(dot))
@@ -146,6 +160,7 @@ void MainClass::gameLoop()
         }
     }
 
+    //wysylanie stanu gry do kazdego gracza
     QString gameState = this->prepareGameState();
     for(GameSocket* socket: connectedSockets)
     {
@@ -153,13 +168,24 @@ void MainClass::gameLoop()
     }
 }
 
+//liczenie dystansu miedzy graczami
 qreal MainClass::calcDistance(QPointF a, QPointF b)
 {
     return qSqrt((a.x()-b.x())*(a.x()-b.x())+(a.y()-b.y())*(a.y()-b.y()));
 }
 
+
+//kazdy gracz dostaje:
+//Gracze: ID;X;Y;SIZE
+//Kule: X;Y
+//PPPP<-GRACZE->OOOO
+//DDDD<-KULE->KKKK
+//PPPP1;12.23;34.54;30  2;34.34;50.50;40    ...OOOO
+//DDDD2.5;4.5   3.8;4.9 ...KKKK
+//8B
 QString MainClass::prepareGameState()
 {
+    //przygotowanie danych graczy
     QString playerData = "PPPP";
     for(GameSocket* socket: connectedSockets)
     {
@@ -168,6 +194,7 @@ QString MainClass::prepareGameState()
     }
     playerData += "OOOO";
 
+    //przygotowanie danych kropek
     QString dotData = "DDDD";
     for(QPointF point: dotsData)
     {
@@ -177,11 +204,12 @@ QString MainClass::prepareGameState()
     return playerData+dotData;
 }
 
+//obsluga nowego polaczenia do serwera
 void MainClass::newConnection()
 {
     QTcpSocket* socket = server.nextPendingConnection();
     int id = this->playerId++;
-    socket->write(("ID: "+QString::number(id)+"\r\n").toUtf8());
+    socket->write(("ID: "+QString::number(id)+"\r\n").toUtf8()); // "ID: 3\r\n"
     GameSocket* gameSocket = new GameSocket(id, socket);
     connectedSockets.append(gameSocket);
     scene->addItem(gameSocket->getPlayer());
@@ -191,6 +219,7 @@ void MainClass::newConnection()
     });
 }
 
+//gdy ktos sie rozlaczy z serwera (tutaj jest wyciek pamieci gdzies)
 void MainClass::stopConnection(GameSocket* socket)
 {
     qDebug() << "stop connection start";

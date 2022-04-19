@@ -5,6 +5,8 @@
 #include "DEFINES.h"
 #include "math.h"
 
+
+//klasa gracza do rysowania go na scenie (+ pare dodatkow)
 Player::Player(QObject* parent) : QObject(parent), QGraphicsEllipseItem()
 {
     this->setZValue(1);
@@ -33,10 +35,15 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     painter->drawEllipse(polygon);
 }
 
+//wywolanie akcji na obiekcie gracza
 void Player::action(bool spaceClicked, double movex, double movey)
 {
+    //predkosc to 3-wielkosc/1000, czyli w sumie spada liniowo (zaczynajac od troche ponizej 3),
     double speed = 3-(double)this->size/1000;
+
+    //ale przy wielkosci 2333+ predkosc juz stoi w miejscu
     if(speed < 0.66) speed = 0.66;
+    //jesli spacja to speed*2, ale moze sie obnizyc masa dodatkowo do normalnej obnizki
     if(spaceClicked)
     {
         speed*=2;
@@ -44,10 +51,12 @@ void Player::action(bool spaceClicked, double movex, double movey)
             this->minusSize();
     }
 
+    //no i musze ustawic nowa pozycje
     QPointF move = mapToParent(2*speed*movex, 2*speed*movey);
     setPos(move);
 
 
+    //mapToParent mapuje mi wzgledna moja pozycje na pozycje na scenie, a wiec mapToParent(0,0) da mi pozycje na scenie
     QPointF currPoint=mapToParent(0,0);
     if(currPoint.x() > RATIO*WIDTH+10) this->setX(RATIO*WIDTH+10);
     if(currPoint.y() > RATIO*HEIGHT) this->setY(RATIO*HEIGHT);
@@ -60,12 +69,14 @@ Player::~Player()
 
 }
 
+//dodaj wielkosc
 void Player::addSize(double size)
 {
     this->size+=size;
     sqrt_size = sqrt(this->size)*sqrt(sqrt(this->size));
 }
 
+//odejmij wielkosc(sqrt jest do rysowania, masa do wysylania i liczenia)
 void Player::minusSize()
 {
     if(size>0)
@@ -88,6 +99,7 @@ double Player::getSqrtSize()
     return sqrt_size;
 }
 
+//a to nie wiem cos srednio dziala i probowalem wiele rzeczy aby nie crashowalo przy zjedzeniu
 void Player::setDead()
 {
     isDead=true;

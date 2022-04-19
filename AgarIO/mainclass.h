@@ -26,12 +26,9 @@ public:
     MainClass(int port, QWidget *parent = nullptr);
     ~MainClass();
     QGraphicsScene* scene;
-protected:
-    bool eventFilter(QObject* target, QEvent* event);
 
 private:
     Ui::MainClass *ui;
-    QSet<int> keysClicked;
     QTimer timer;
     void gameLoop();
     QVector<QGraphicsItem*> items;
