@@ -42,7 +42,6 @@ private:
 
 private slots:
     void newConnection();
-    void stopConnection(GameSocket* socket);
 };
 
 #endif // MAINCLASS_H

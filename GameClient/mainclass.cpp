@@ -6,6 +6,7 @@
 #include "dot.h"
 #include <QtMath>
 #include <QHostAddress>
+#include <QMessageBox>
 
 
 
@@ -36,10 +37,16 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     //zalacz petle programu na 25ms
     timer.start(25);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
+    connect(&socket, &QTcpSocket::disconnected, this, [=](){
+        QMessageBox::information(this, "Agar.IO", "Game lost!", QMessageBox::Ok);
+        qApp->quit();
+    });
 }
 
 MainClass::~MainClass()
 {
+    if(socket.isOpen())
+        socket.disconnectFromHost();
     delete ui;
 }
 

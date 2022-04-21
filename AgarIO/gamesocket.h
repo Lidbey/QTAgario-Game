@@ -16,6 +16,7 @@ public:
     void doAction();
     void sendState(QString gameState);
     int getId();
+    bool isOk();
 private:
     QTcpSocket* socket;
     Player* player;
@@ -24,6 +25,7 @@ private:
     double movex=0;
     double movey=0;
     bool sprint=false;
+    bool disconnected=false;
 
 private slots:
     void read();

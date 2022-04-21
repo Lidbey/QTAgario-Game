@@ -12,11 +12,15 @@ GameSocket::GameSocket(int id, QTcpSocket* socket, QObject *parent) : QObject(pa
     this->id = id;
     this->socket = socket;
     connect(socket, &QTcpSocket::readyRead, this, &GameSocket::read);
+    connect(socket, &QTcpSocket::disconnected, this, [=](){
+        disconnected = true;
+    });
 }
 
 GameSocket::~GameSocket()
 {
-    //socket->disconnectFromHost();
+    if(socket->isOpen())
+        socket->disconnectFromHost();
     delete player;
 }
 
@@ -54,6 +58,11 @@ void GameSocket::sendState(QString gameState)
 int GameSocket::getId()
 {
     return id;
+}
+
+bool GameSocket::isOk()
+{
+    return !player->dead() && socket->isOpen() && !disconnected;
 }
 
 //czytaj przychodzace dane, musi byc bufor bo tcp czasem ucina pakiety

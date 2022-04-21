@@ -61,11 +61,10 @@ void MainClass::gameLoop()
     //dla kazdego polaczonego socketa:
     for(int i=connectedSockets.length()-1; i>=0; i--)
     {
-        //pobierz gracza od polaczonego socketa
-        Player* player = connectedSockets[i]->getPlayer();
-        if(player->dead())
+        if(!connectedSockets[i]->isOk())
         {
-            connectedSockets[i]->getSocket()->disconnectFromHost();
+            connectedSockets[i]->deleteLater();
+            connectedSockets.removeAt(i);
             continue;
         }
         //jesli akcja jest poprawna to ja wykonaj
@@ -74,12 +73,12 @@ void MainClass::gameLoop()
             connectedSockets[i]->doAction();
         }
 
+        Player* player = connectedSockets[i]->getPlayer();
         //2 razy na 200 iteracji wywolaj player->minusSize() czyli po prostu obniz mu wielkosc
         if(rand()%200<2)
         {
             player->minusSize();
         }
-
         //zupdatuj gracza na scenie
         player->update();
     }
@@ -88,7 +87,6 @@ void MainClass::gameLoop()
     for(int j=0; j<connectedSockets.length(); j++)
     {
         Player* player = connectedSockets[j]->getPlayer();
-        if(!player || player->dead()) continue;
         QList<QGraphicsItem*> colliding=scene->collidingItems(player);
 
         for(int i=0; i<colliding.length(); i++)
@@ -107,7 +105,6 @@ void MainClass::gameLoop()
             {
                 Player* player = dynamic_cast<Player*>(colliding[i]);
                 Player* enemyPlayer = connectedSockets[i]->getPlayer();
-                if(enemyPlayer->dead()) continue;
                 QPointF enemyPos = enemyPlayer->pos();
                 QPointF allyPos = player->pos();
                 qreal distance = calcDistance(enemyPos, allyPos);
@@ -117,9 +114,7 @@ void MainClass::gameLoop()
                 {
                     if(allySize > distance)
                     {
-                        qDebug() << "ally won";
                         player->addSize(enemyPlayer->getSize());
-                        //scene->removeItem(enemyPlayer);
                         enemyPlayer->setDead();
                     }
                 }
@@ -127,9 +122,7 @@ void MainClass::gameLoop()
                 {
                     if(enemySize > distance)
                     {
-                        qDebug() << "enemy won";
                         enemyPlayer->addSize(player->getSize());
-                        //scene->removeItem(player);
                         player->setDead();
                     }
                 }
@@ -214,17 +207,4 @@ void MainClass::newConnection()
     connectedSockets.append(gameSocket);
     scene->addItem(gameSocket->getPlayer());
     gameSocket->getPlayer()->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
-    connect(gameSocket->getSocket(), &QTcpSocket::disconnected, this, [=](){
-        stopConnection(gameSocket);
-    });
-}
-
-//gdy ktos sie rozlaczy z serwera (tutaj jest wyciek pamieci gdzies)
-void MainClass::stopConnection(GameSocket* socket)
-{
-    qDebug() << "stop connection start";
-    connectedSockets.removeAll(socket);
-    scene->removeItem(socket->getPlayer());
-    socket->deleteLater();
-    qDebug() << "stop connection stop";
 }
