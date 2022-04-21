@@ -7,7 +7,7 @@ class Player : public QObject, public QGraphicsEllipseItem
 {
     Q_OBJECT
 public:
-    explicit Player(QObject* parent=nullptr);
+    explicit Player(int id, QObject* parent=nullptr);
     ~Player();
     void addSize(double size=8);
     void minusSize();
@@ -29,6 +29,7 @@ private:
     int size=0;
     double sqrt_size=0;
     bool isDead=false;
+    int id;
 };
 
 #endif // PLAYER_H

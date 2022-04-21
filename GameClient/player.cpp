@@ -4,6 +4,7 @@
 #include <QGraphicsScene>
 #include "DEFINES.h"
 #include "math.h"
+#include <QRandomGenerator>
 
 Player::Player(int id, QObject* parent) : QObject(parent), QGraphicsEllipseItem()
 {
@@ -27,10 +28,11 @@ QPainterPath Player::shape() const
 
 void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    QRandomGenerator generator(id);
     Q_UNUSED(option)
     Q_UNUSED(widget)
     QRectF polygon(-MAIN_WIDTH/2-sqrt_size/2,-MAIN_HEIGHT/2-sqrt_size/2,MAIN_WIDTH+sqrt_size,MAIN_HEIGHT+sqrt_size);
-    painter->setBrush(Qt::blue);
+    painter->setBrush(QColor(generator.bounded(256),generator.bounded(256),generator.bounded(256)));
     painter->drawEllipse(polygon);
 }
 

@@ -5,7 +5,7 @@
 //ten obiekt jest po stronie serwera, ale nalezy do gracza (taki byl zamysl)
 GameSocket::GameSocket(int id, QTcpSocket* socket, QObject *parent) : QObject(parent)
 {
-    player = new Player(this);
+    player = new Player(id, this);
     movex=0;
     movey=0;
     sprint=false;
