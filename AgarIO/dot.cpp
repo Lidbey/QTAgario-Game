@@ -5,6 +5,28 @@ Dot::Dot() : QGraphicsEllipseItem()
 {
 }
 
+QString Dot::mapToData()
+{
+    return  QString::number(this->pos().x())+";"+
+            QString::number(this->pos().y())+";"+
+            (active?"1":"0");
+}
+
+void Dot::disable()
+{
+    active = false;
+}
+
+void Dot::enable()
+{
+    active = true;
+}
+
+bool Dot::enabled()
+{
+    return active;
+}
+
 QRectF Dot::boundingRect() const
 {
     return QRectF(-RADIUS,-RADIUS,RADIUS,RADIUS);

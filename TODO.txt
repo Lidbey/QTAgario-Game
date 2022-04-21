@@ -1,5 +1,3 @@
 1. Klient musi plynnie chodzić nawet jeżeli nie dostaje info z serwera (powtarzając dawną akcję otrzymaną od serwera)
 		Przykład: Metin2, gdzie ktoś kto dostał DC biegł cały czas w ścianę (np)
-2. Wiadomości pomiędzy klientem a serwerem muszą być inteligentniejsze (co najmniej wysyłanie ZMIANY, zamiast całego stanu za każdym razem)
-		Wg mnie będzie to wymagało trzymania i wysyłania także ID kulek
-3. Ogarnąć dlaczego program się crashuje gdy jeden gracz zje drugiego
+2. Wiadomości do refaktoryzacja

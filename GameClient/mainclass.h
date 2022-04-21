@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QSet>
 #include <QTcpSocket>
+#include "dot.h"
 
 namespace Ui {
 class MainClass;
@@ -34,20 +35,23 @@ private:
     QTimer timer;
     void sendData();
     QVector<QGraphicsItem*> items;
-    qreal calcDistance(QPointF, QPointF);
+    QList<Dot*> dots;
     double diffx;
     double diffy;
     bool space;
     int id;
     QTcpSocket socket;
+    QString buffer="";
+
+    void sendState(bool space, double diffx, double diffy);
+    void analyzeDotData(QString);
+    void analyzePlayerData(QString);
+
 
     void setGraphicsView();
     void gatherData();
-    QString buffer="";
-    void sendState(bool space, double diffx, double diffy);
 
-    void analyzeDotData(QString);
-    void analyzePlayerData(QString);
+    qreal calcDistance(QPointF, QPointF);
 
 signals:
     void clicked(QSet<int> keys, double movex, double movey);

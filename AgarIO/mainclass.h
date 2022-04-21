@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QTcpServer>
 #include "gamesocket.h"
+#include "dot.h"
 
 namespace Ui {
 class MainClass;
@@ -30,15 +31,19 @@ public:
 private:
     Ui::MainClass *ui;
     QTimer timer;
-    void gameLoop();
-    QVector<QGraphicsItem*> items;
-    qreal calcDistance(QPointF, QPointF);
     QTcpServer server;
+    QVector<QGraphicsItem*> items;
     QList<GameSocket*> connectedSockets;
-    QString prepareGameState();
-
-    QList<QPointF> dotsData;
+    QList<Dot*> dots;
     int playerId=0;
+
+
+    void gameLoop();
+    QString prepareGameState();
+    QString prepareChangeState(QList<Dot*> changed);
+
+
+    qreal calcDistance(QPointF, QPointF);
 
 private slots:
     void newConnection();

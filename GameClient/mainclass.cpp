@@ -38,6 +38,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     timer.start(25);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
     connect(&socket, &QTcpSocket::disconnected, this, [=](){
+        this->disconnect();
         QMessageBox::information(this, "Agar.IO", "Game lost!", QMessageBox::Ok);
         qApp->quit();
     });
@@ -136,6 +137,7 @@ void MainClass::gatherData()
 {
     //znowu sytuacja z buforem, czytaj serwer tam wytlumaczone
     buffer+=socket.readAll();
+    qDebug() << buffer;
     //jesli jest "ID" to znaczy, ze to pierwsza dana ktora przyszla a wiec informacja o tym, ktorym ID jest klient(bardzo wazne!)
     if(buffer.contains("ID") && buffer.contains("\r\n"))
     {
@@ -174,6 +176,35 @@ void MainClass::gatherData()
         analyzeDotData(dotData);
     }
 
+    if(buffer.contains("C: "))
+    {
+        QStringList dataPlayerAndDot = buffer.split("\r\n");
+        if(buffer.size()<3) return;
+        //buffer.remove("C: ").remove("\r\n");
+        dataPlayerAndDot[0].remove("C: ");
+        QStringList data = dataPlayerAndDot[0].split("\t");
+        buffer = "";
+        for(QString& item: data)
+        {
+            QStringList itemData = item.split(";");
+            if(itemData.length()!=2) continue;
+            if(itemData[1]=="1")
+            {
+                dots[itemData[0].toInt()]->enable();
+                scene->addItem(dots[itemData[0].toInt()]);
+            }
+            else
+            {
+                dots[itemData[0].toInt()]->disable();
+                scene->removeItem(dots[itemData[0].toInt()]);
+            }
+        }
+
+        dataPlayerAndDot[1].remove("PPPP").remove("OOOO");
+        QString playerData = dataPlayerAndDot[1];
+        analyzePlayerData(playerData);
+
+    }
 }
 
 //wyslij stan w formie
@@ -187,17 +218,27 @@ void MainClass::sendState(bool space, double diffx, double diffy)
 void MainClass::analyzeDotData(QString data)
 {
     //kropki sa porozdzielane znakiem \t wiec stworz liste
-    QStringList dots = data.split("\t");
+    QStringList dotsData = data.split("\t");
     //i dla kazdego elementu listy:
-    for(int i=0; i<dots.length(); i++)
+    for(int i=0; i<dotsData.length(); i++)
     {
         //rozdziel teraz znakiem ';' bo tak sa rozdzielone dane kropki (x;y)
-        QStringList splitted = dots[i].split(';');
-        if(splitted.length() != 2) return;
+        QStringList splitted = dotsData[i].split(';');
+        if(splitted.length() != 3) return;
         //stworz kropke, dodaj na scene, ustaw wspolrzedne)
         Dot* dot = new Dot();
-        scene->addItem(dot);
         dot->setPos(splitted[0].toDouble(), splitted[1].toDouble());
+        if(splitted[2]=="1")
+        {
+            dot->enable();
+            scene->addItem(dot);
+        }
+        else
+        {
+            dot->disable();
+            scene->removeItem(dot);
+        }
+        dots << dot;
     }
     //odswiez scene (dopiero po pelnej analizie wszystkich danych!!)
     scene->update();
@@ -215,7 +256,7 @@ void MainClass::analyzePlayerData(QString data)
     //wyczysc graczy z kontenera
     players.clear();
     //wyczysc scene
-    scene->clear();
+    //scene->clear();
     //i przeanalizuj dane ktore przyszly,
     //poszczegolni gracze rozdzieleni znakami \t, a dane rozdzielone znakiem ';' i znow to samo co z kropkami
     QStringList players = data.split("\t");
