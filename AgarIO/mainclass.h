@@ -40,6 +40,7 @@ private:
 
     void gameLoop();
     QString prepareGameState();
+    QString preparePlayerData();
     QString prepareChangeState(QList<Dot*> changed);
 
 

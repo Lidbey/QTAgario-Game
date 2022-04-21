@@ -7,10 +7,6 @@
 #define RATIO 5
 #define START_DOTS 1500
 
-#define BLOCK_WIDTH 100
-#define BLOCK_HEIGHT 100
-#define ADJUST 0
-
 #define MAIN_WIDTH 80
 #define MAIN_HEIGHT 60
 #endif // DEFINES_H

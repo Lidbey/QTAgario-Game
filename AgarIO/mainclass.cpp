@@ -63,6 +63,8 @@ void MainClass::gameLoop()
     //dla kazdego polaczonego socketa:
     for(int i=connectedSockets.length()-1; i>=0; i--)
     {
+        //jesli socket nie jest OK (czyli albo jest dead, albo rozlaczyl sie, albo socketa nie udalo sie otworzyc
+        //to usun to z pamieci i wektora
         if(!connectedSockets[i]->isOk())
         {
             connectedSockets[i]->deleteLater();
@@ -97,19 +99,17 @@ void MainClass::gameLoop()
             Dot* dot = dynamic_cast<Dot*>(colliding[i]);
             if(dot!=nullptr)
             {
-                //dotsData.removeOne(colliding[i]->pos());
-                //eaten << colliding[i]->pos();
+                //jesli nie jest aktywowana to olewam i ide dalej
                 if(!dot->enabled()) continue;
                 changedDots << dot;
                 dot->disable();
                 scene->removeItem(dot);
-                //scene->removeItem(colliding[i]);
-                //delete colliding[i];
                 player->addSize();
             }
 
             //kolizja z graczami
-            if(dynamic_cast<Player*>(colliding[i])!=nullptr)
+            Player* player = dynamic_cast<Player*>(colliding[i]);
+            if(player!=nullptr)
             {
                 Player* player = dynamic_cast<Player*>(colliding[i]);
                 Player* enemyPlayer = connectedSockets[i]->getPlayer();
@@ -138,39 +138,19 @@ void MainClass::gameLoop()
         }
     }
 
-    // tworzenie nowej kropki
-    /*if(rand()%100<10)
-    {
-        if(scene->items().length()<5000)
-        {
-            Dot* dot=new Dot();
-            scene->addItem(dot);
-            dot->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
-            dotsData << dot->pos();
-            added << dot->pos();
-            //sprawdzanie czy kropka koliduje z graczami, jesli tak to usun ja
-            for(int i=0; i<connectedSockets.length(); i++)
-            {
-                if(connectedSockets[i]->getPlayer()->collidesWithItem(dot))
-                {
-                    dotsData.removeOne(dot->pos());
-                    added.removeOne(dot->pos());
-                    scene->removeItem(dot);
-                    delete dot;
-                    break;
-                }
-            }
-        }
-    }*/
-
-
     //aktywowanie krop
     for(Dot* dot: dots)
     {
-        if((!dot->enabled()) && rand()%50==0 && !changedDots.contains(dot))
+        //chcę aktywować kropki które a) nie są aktywowane, b) jakis odstep czasowy (%200=0 czyli raz na 200 iteracji)
+        // i c) ktore nie byly dezaktywowane w tej iteracji
+        if((!dot->enabled()) && rand()%200==0 && !changedDots.contains(dot))
         {
+            //aktywuj i dodaj na mape
             dot->enable();
             scene->addItem(dot);
+
+            //ale mimo wszystko sprawdzam, czy nie koliduje z czyms (aktualnie tylko z graczem), jesli koliduje to
+            //spowrotem usuwam :D
             if(dot->collidingItems().length()==0)
                 changedDots << dot;
             else
@@ -181,12 +161,7 @@ void MainClass::gameLoop()
         }
     }
 
-    //wysylanie stanu gry do kazdego gracza
-    /*QString gameState = this->prepareGameState();
-    for(GameSocket* socket: connectedSockets)
-    {
-        socket->sendState(gameState);
-    }*/
+    //wysylanie zmiany stanu gry do kazdego gracza
     QString data = this->prepareChangeState(changedDots);
     for(GameSocket* socket: connectedSockets)
     {
@@ -201,24 +176,11 @@ qreal MainClass::calcDistance(QPointF a, QPointF b)
 }
 
 
-//kazdy gracz dostaje:
-//Gracze: ID;X;Y;SIZE
-//Kule: X;Y
-//PPPP<-GRACZE->OOOO
-//DDDD<-KULE->KKKK
-//PPPP1;12.23;34.54;30  2;34.34;50.50;40    ...OOOO
-//DDDD2.5;4.5   3.8;4.9 ...KKKK
-//8B
+//kazdy gracz dostaje przy podlaczeniu sie
 QString MainClass::prepareGameState()
 {
     //przygotowanie danych graczy
-    QString playerData = "PPPP";
-    for(GameSocket* socket: connectedSockets)
-    {
-        QPointF pos = socket->getPlayer()->pos();
-        playerData+=QString::number(socket->getId())+";"+QString::number(pos.x())+";"+QString::number(pos.y())+";"+QString::number(socket->getPlayer()->getSize())+"\t";
-    }
-    playerData += "OOOO";
+    QString playerData = preparePlayerData();
 
     //przygotowanie danych kropek
     QString dotData = "DDDD";
@@ -230,6 +192,21 @@ QString MainClass::prepareGameState()
     return playerData+dotData;
 }
 
+QString MainClass::preparePlayerData()
+{
+    //przygotowanie danych graczy
+    QString playerData = "PPPP";
+    for(GameSocket* socket: connectedSockets)
+    {
+        QPointF pos = socket->getPlayer()->pos();
+        playerData+=QString::number(socket->getId())+";"+QString::number(pos.x())+";"+QString::number(pos.y())+";"+QString::number(socket->getPlayer()->getSize())+"\t";
+    }
+    playerData += "OOOO";
+    return playerData;
+}
+
+
+//przygotowanie danych zmienianych kropek
 QString MainClass::prepareChangeState(QList<Dot*> changedDot)
 {
     QString data = "C: ";
@@ -238,18 +215,7 @@ QString MainClass::prepareChangeState(QList<Dot*> changedDot)
         data+=QString::number(dots.indexOf(dot))+";"+((dot->enabled())?"1":"0")+"\t";
     }
     data+="\r\n";
-
-
-
-    QString playerData = "PPPP";
-    for(GameSocket* socket: connectedSockets)
-    {
-        QPointF pos = socket->getPlayer()->pos();
-        playerData+=QString::number(socket->getId())+";"+QString::number(pos.x())+";"+QString::number(pos.y())+";"+QString::number(socket->getPlayer()->getSize())+"\t";
-    }
-    playerData += "OOOO\r\n";
-
-
+    QString playerData = preparePlayerData()+"\r\n";
     return data+playerData;
 }
 

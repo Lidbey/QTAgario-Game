@@ -8,7 +8,6 @@ class Dot : public QGraphicsEllipseItem
 public:
     Dot();
     QString mapToData();
-    QString mapToChanges();
     void disable();
     void enable();
     bool enabled();

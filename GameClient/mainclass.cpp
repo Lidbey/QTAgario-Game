@@ -8,8 +8,6 @@
 #include <QHostAddress>
 #include <QMessageBox>
 
-
-
 //glowna klasa programu
 MainClass::MainClass(QString address, int port, QWidget *parent)
     : QWidget(parent)
@@ -158,7 +156,7 @@ void MainClass::gatherData()
     }
 
 
-    //jesli bufor ma te PPPP i OOOO i DDD i KKKK to znaczy, ze mamy jeden kompletny stan
+    //jesli bufor ma te PPPP i OOOO i DDD i KKKK to znaczy, ze przyszedl stan gry
     if(buffer.contains("PPPP") && buffer.contains("OOOO") && buffer.contains("DDDD") && buffer.contains("KKKK"))
     {
         //no i tutaj formatowanie tego wszystkiego ...
@@ -180,7 +178,6 @@ void MainClass::gatherData()
     {
         QStringList dataPlayerAndDot = buffer.split("\r\n");
         if(buffer.size()<3) return;
-        //buffer.remove("C: ").remove("\r\n");
         dataPlayerAndDot[0].remove("C: ");
         QStringList data = dataPlayerAndDot[0].split("\t");
         buffer = "";
@@ -255,8 +252,6 @@ void MainClass::analyzePlayerData(QString data)
     }
     //wyczysc graczy z kontenera
     players.clear();
-    //wyczysc scene
-    //scene->clear();
     //i przeanalizuj dane ktore przyszly,
     //poszczegolni gracze rozdzieleni znakami \t, a dane rozdzielone znakiem ';' i znow to samo co z kropkami
     QStringList players = data.split("\t");
