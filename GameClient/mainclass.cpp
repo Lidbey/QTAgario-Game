@@ -32,6 +32,8 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
+
     //zalacz petle programu na 25ms
     timer.start(25);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
@@ -75,23 +77,9 @@ void MainClass::sendData()
 {
 
     //szukam siebie w calej liscie graczy ktora mam
-    Player* player = nullptr;
-    for(int i=0; i<players.length(); i++)
-    {
-        if(players[i]->getId()==this->id)
-        {
-            player=players[i];
-        }
-    }
-
-    //jesli nie znalazlem to koniec (czemu moze mnie nie byc? - zabezpieczenie)
-    if(!player) return;
-
-    //ustaw widok scentrowany na mnie
-    QRectF rect(player->pos().x()-WIDTH/2-player->getSqrtSize()/3, player->pos().y()-HEIGHT/2-player->getSqrtSize()/3, WIDTH+player->getSqrtSize()*2/3, HEIGHT+player->getSqrtSize()*2/3);
-    ui->graphicsView->setSceneRect(rect);
-    ui->graphicsView->centerOn(rect.center());
-    ui->graphicsView->fitInView(rect, Qt::AspectRatioMode::KeepAspectRatio);
+    int id = searchForPlayer(this->id);
+    if(id==-1) return;
+    Player* player = players[id];
 
     //a tutaj tworz wektor normalny, najpierw pozycje kursora, pozniej odejmij pozycje gracza
     QPoint pos = ui->graphicsView->mapFromGlobal(QCursor::pos());
@@ -100,7 +88,7 @@ void MainClass::sendData()
     int diffy = relativePos.y() - player->pos().y();
 
     //takie troche uproszczenie, aby dalo sie zatrzymac w miejscu gdy myszka jest naprawde blisko srodka
-    if(abs(diffx)+abs(diffy) < 0.01)
+    if(abs(diffx)+abs(diffy) < 0.05)
     {
         sendState(space, 0, 0);
         return;
@@ -133,6 +121,7 @@ qreal MainClass::calcDistance(QPointF a, QPointF b)
 //pobranie danych z serwera
 void MainClass::gatherData()
 {
+    qDebug() << buffer;
     //znowu sytuacja z buforem, czytaj serwer tam wytlumaczone
     buffer+=socket.readAll();
     qDebug() << buffer;
@@ -258,11 +247,29 @@ void MainClass::analyzePlayerData(QString data)
     for(int i=0; i<players.length(); i++)
     {
         QStringList splitted = players[i].split(';');
-        if(splitted.length() != 4) return;
+        if(splitted.length() != 4) continue;
         Player* player = new Player(splitted[0].toInt());
         this->players.append(player);
         scene->addItem(player);
         player->setPos(splitted[1].toDouble(), splitted[2].toDouble());
         player->setSize(splitted[3].toDouble());
     }
+
+    int id = searchForPlayer(this->id);
+    if(id==-1) return;
+    Player* player = this->players[id];
+    QRectF rect(player->pos().x()-WIDTH/2-player->getSqrtSize()/3, player->pos().y()-HEIGHT/2-player->getSqrtSize()/3, WIDTH+player->getSqrtSize()*2/3, HEIGHT+player->getSqrtSize()*2/3);
+    ui->graphicsView->setSceneRect(rect);
+    ui->graphicsView->centerOn(rect.center());
+    ui->graphicsView->fitInView(rect, Qt::AspectRatioMode::KeepAspectRatio);
+}
+
+int MainClass::searchForPlayer(int id)
+{
+    for(int i=0; i<players.length(); i++)
+    {
+        if(players[i]->getId()==id)
+            return i;
+    }
+    return -1;
 }

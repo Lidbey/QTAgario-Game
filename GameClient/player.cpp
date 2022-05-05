@@ -14,14 +14,14 @@ Player::Player(int id, QObject* parent) : QObject(parent), QGraphicsEllipseItem(
 
 QRectF Player::boundingRect() const
 {
-    QRectF polygon(-MAIN_WIDTH/2-sqrt_size/2,-MAIN_HEIGHT/2-sqrt_size/2,MAIN_WIDTH+sqrt_size,MAIN_HEIGHT+sqrt_size);
+    QRectF polygon(2*(-MAIN_WIDTH/2-sqrt_size/2),2*(-MAIN_HEIGHT/2-sqrt_size/2),2*(MAIN_WIDTH+sqrt_size),2*(MAIN_HEIGHT+sqrt_size));
     return polygon;
 }
 
 QPainterPath Player::shape() const
 {
     QPainterPath path;
-    QRectF polygon(-MAIN_WIDTH/2-sqrt_size/2,-MAIN_HEIGHT/2-sqrt_size/2,MAIN_WIDTH+sqrt_size,MAIN_HEIGHT+sqrt_size);
+    QRectF polygon(2*(-MAIN_WIDTH/2-sqrt_size/2),2*(-MAIN_HEIGHT/2-sqrt_size/2),2*(MAIN_WIDTH+sqrt_size),2*(MAIN_HEIGHT+sqrt_size));
     path.addEllipse(polygon);
     return path;
 }

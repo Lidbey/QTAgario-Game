@@ -27,6 +27,7 @@ public:
     ~MainClass();
     QGraphicsScene* scene;
     QList<Player*> players;
+    int searchForPlayer(int id);
 protected:
     bool eventFilter(QObject* target, QEvent* event);
 
