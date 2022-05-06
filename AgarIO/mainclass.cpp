@@ -55,9 +55,7 @@ MainClass::MainClass(int port, QWidget *parent)
         for(QProcess* process: currentProcesses)
         {
             QProcess processNew;
-            qDebug() << process->processId();
             processNew.start("taskkill", {"/F", "/T", "/PID", QString::number(process->processId())});
-
             processNew.waitForFinished();
             process->deleteLater();
         }
