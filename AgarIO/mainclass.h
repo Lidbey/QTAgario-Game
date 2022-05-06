@@ -10,6 +10,7 @@
 #include <QTcpServer>
 #include "gamesocket.h"
 #include "dot.h"
+#include <QProcess>
 
 namespace Ui {
 class MainClass;
@@ -37,6 +38,8 @@ private:
     QList<Dot*> dots;
     int playerId=0;
 
+    QString port;
+
 
     void gameLoop();
     QString prepareGameState();
@@ -46,8 +49,11 @@ private:
 
     qreal calcDistance(QPointF, QPointF);
 
+    QList<QProcess*> currentProcesses;
+
 private slots:
     void newConnection();
+    void addBots();
 };
 
 #endif // MAINCLASS_H

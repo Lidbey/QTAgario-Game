@@ -17,6 +17,7 @@ MainClass::MainClass(int port, QWidget *parent)
 
     //startuje serwer(zwraca true/false, ale narazie to ignoruje, pozniej mozna ogarnac aby wyskoczyl box gdy false)
     server.listen(QHostAddress::Any, port);
+    this->port = QString::number(port);
 
     //tworze scene
     scene=new QGraphicsScene();
@@ -48,6 +49,20 @@ MainClass::MainClass(int port, QWidget *parent)
     connect(&timer, &QTimer::timeout, this, &MainClass::gameLoop);
     //sygnal ktory wywoluje newConnection gdy ktos sie podlaczy do serwera
     connect(&server, &QTcpServer::newConnection, this, &MainClass::newConnection);
+
+    connect(ui->addBots, &QPushButton::clicked, this, &MainClass::addBots);
+    connect(ui->killBots, &QPushButton::clicked, this, [=](){
+        for(QProcess* process: currentProcesses)
+        {
+            QProcess processNew;
+            qDebug() << process->processId();
+            processNew.start("taskkill", {"/F", "/T", "/PID", QString::number(process->processId())});
+
+            processNew.waitForFinished();
+            process->deleteLater();
+        }
+        currentProcesses.clear();
+    });
 }
 
 MainClass::~MainClass()
@@ -108,13 +123,13 @@ void MainClass::gameLoop()
             }
 
             //kolizja z graczami
-            Player* player = dynamic_cast<Player*>(colliding[i]);
-            if(player!=nullptr)
+            Player* enemyPlayer = dynamic_cast<Player*>(colliding[i]);
+            if(enemyPlayer!=nullptr)
             {
-                Player* player = dynamic_cast<Player*>(colliding[i]);
-                Player* enemyPlayer = connectedSockets[i]->getPlayer();
-                QPointF enemyPos = enemyPlayer->pos();
-                QPointF allyPos = player->pos();
+
+                //Player* enemyPlayer = connectedSockets[i]->getPlayer();
+                QPointF enemyPos = enemyPlayer->scenePos();
+                QPointF allyPos = player->scenePos();
                 qreal distance = calcDistance(enemyPos, allyPos);
                 double enemySize = enemyPlayer->getSqrtSize();
                 double allySize = player->getSqrtSize();
@@ -230,4 +245,13 @@ void MainClass::newConnection()
     connectedSockets.append(gameSocket);
     scene->addItem(gameSocket->getPlayer());
     gameSocket->getPlayer()->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
+}
+
+void MainClass::addBots()
+{
+    QProcess* process = new QProcess();
+    currentProcesses << process;
+    process->setProgram("python");
+    process->setArguments({"./bot.py", "127.0.0.1", this->port, QString::number(ui->numBots->value())});
+    process->start();
 }

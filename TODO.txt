@@ -1,3 +1,0 @@
-1. Klient musi plynnie chodzić nawet jeżeli nie dostaje info z serwera (powtarzając dawną akcję otrzymaną od serwera)
-		Przykład: Metin2, gdzie ktoś kto dostał DC biegł cały czas w ścianę (np)
-2. Wiadomości do refaktoryzacja
