@@ -15,6 +15,8 @@ public:
     double getSqrtSize();
     void setDead();
     bool dead();
+    void setId(int id);
+    int getId();
 
 public slots:
     void action(bool, double, double);

@@ -124,7 +124,7 @@ void MainClass::gameLoop()
             Player* enemyPlayer = dynamic_cast<Player*>(colliding[i]);
             if(enemyPlayer!=nullptr)
             {
-
+                if(player->getId() == enemyPlayer->getId()) continue;
                 //Player* enemyPlayer = connectedSockets[i]->getPlayer();
                 QPointF enemyPos = enemyPlayer->scenePos();
                 QPointF allyPos = player->scenePos();
@@ -212,7 +212,7 @@ QString MainClass::preparePlayerData()
     for(GameSocket* socket: connectedSockets)
     {
         QPointF pos = socket->getPlayer()->pos();
-        playerData+=QString::number(socket->getId())+";"+QString::number(pos.x())+";"+QString::number(pos.y())+";"+QString::number(socket->getPlayer()->getSize())+"\t";
+        playerData+=QString::number(socket->getId())+";"+QString::number(pos.x())+";"+QString::number(pos.y())+";"+QString::number(socket->getPlayer()->getSize())+";"+QString::number(socket->getTeam())+"\t";
     }
     playerData += "OOOO";
     return playerData;
@@ -243,6 +243,16 @@ void MainClass::newConnection()
     connectedSockets.append(gameSocket);
     scene->addItem(gameSocket->getPlayer());
     gameSocket->getPlayer()->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
+
+    connect(gameSocket, &GameSocket::addBots, this, [=](int team){
+        QProcess* process = new QProcess();
+        currentProcesses << process;
+        process->setProgram("python");
+        process->setArguments({"./bot.py", "127.0.0.1", this->port, "1", QString::number(team)});
+        process->start();
+        for(int i=0; i<15; i++)
+            gameSocket->getPlayer()->minusSize();
+    });
 }
 
 void MainClass::addBots()

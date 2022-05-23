@@ -114,3 +114,13 @@ bool Player::dead()
 {
     return isDead;
 }
+
+void Player::setId(int id)
+{
+    this->id = id;
+}
+
+int Player::getId()
+{
+    return id;
+}

@@ -63,3 +63,8 @@ double Player::getSqrtSize()
 {
     return sqrt_size;
 }
+
+void Player::setId(int id)
+{
+    this->id = id;
+}

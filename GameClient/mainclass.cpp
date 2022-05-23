@@ -264,12 +264,13 @@ void MainClass::analyzePlayerData(QString data)
     for(int i=0; i<players.length(); i++)
     {
         QStringList splitted = players[i].split(';');
-        if(splitted.length() != 4) continue;
+        if(splitted.length() != 5) continue;
         Player* player = new Player(splitted[0].toInt());
         this->players.append(player);
         scene->addItem(player);
         player->setPos(splitted[1].toDouble(), splitted[2].toDouble());
         player->setSize(splitted[3].toDouble());
+        player->setId(splitted[4].toInt());
     }
 
     int id = searchForPlayer(this->id);

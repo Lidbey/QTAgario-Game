@@ -11,6 +11,7 @@ GameSocket::GameSocket(int id, QTcpSocket* socket, QObject *parent) : QObject(pa
     sprint=false;
     this->id = id;
     this->socket = socket;
+    this->teamNumber = id;
     connect(socket, &QTcpSocket::readyRead, this, &GameSocket::read);
     connect(socket, &QTcpSocket::disconnected, this, [=](){
         disconnected = true;
@@ -60,6 +61,11 @@ int GameSocket::getId()
     return id;
 }
 
+int GameSocket::getTeam()
+{
+    return teamNumber;
+}
+
 bool GameSocket::isOk()
 {
     return !player->dead() && socket->isOpen() && !disconnected;
@@ -87,12 +93,21 @@ void GameSocket::read()
         //Vy skladowa Y wektora ruchu
         //S to 1 albo 0 w zaleznosci czy mam sprinta czy nie
         QStringList actions = list[0].split(';');
-        if(actions.length() < 4) return;
-        movex = actions[0].toDouble();
-        movey = actions[1].toDouble();
-        sprint = (actions[2] == "1");
-        divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
+        if(actions.length() == 4)
+        {
+            movex = actions[0].toDouble();
+            movey = actions[1].toDouble();
+            sprint = (actions[2] == "1");
+            divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
 
+            if(divide)
+                emit addBots(teamNumber);
+        }
+        else if(actions.length() == 1)
+        {
+            this->teamNumber = actions[0].toInt();
+            this->player->setId(teamNumber);
+        }
 
         //w sumie tego chyba nie trzeba robic bo nic tu nie zmieniam
         player->update();

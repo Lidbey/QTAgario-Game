@@ -10,6 +10,7 @@ public:
     explicit Player(int id, QObject* parent=nullptr);
     ~Player();
     int getId();
+    void setId(int id);
     void setSize(int size);
     int getSize();
     double getSqrtSize();

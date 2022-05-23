@@ -16,6 +16,7 @@ public:
     void doAction();
     void sendState(QString gameState);
     int getId();
+    int getTeam();
     bool isOk();
 private:
     QTcpSocket* socket;
@@ -28,9 +29,12 @@ private:
     bool divide=false;
     bool disconnected=false;
 
+    int teamNumber;
+
 private slots:
     void read();
 signals:
+    void addBots(int team);
 
 };
 
