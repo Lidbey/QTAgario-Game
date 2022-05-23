@@ -34,17 +34,19 @@ protected:
 private:
     Ui::MainClass *ui;
     QTimer timer;
+    QTimer timerSpace;
     void sendData();
     QVector<QGraphicsItem*> items;
     QList<Dot*> dots;
     double diffx;
     double diffy;
     bool space;
+    bool mouseClick;
     int id;
     QTcpSocket socket;
     QString buffer="";
 
-    void sendState(bool space, double diffx, double diffy);
+    void sendState(bool mouseClick, bool space, double diffx, double diffy);
     void analyzeDotData(QString);
     void analyzePlayerData(QString);
 

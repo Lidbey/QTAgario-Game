@@ -72,6 +72,7 @@ bool GameSocket::isOk()
 void GameSocket::read()
 {
     buffer += socket->readAll();
+    qDebug() << buffer;
     if(buffer.contains("\r\n"))
     {
         QStringList list = buffer.split("\r\n");
@@ -86,10 +87,11 @@ void GameSocket::read()
         //Vy skladowa Y wektora ruchu
         //S to 1 albo 0 w zaleznosci czy mam sprinta czy nie
         QStringList actions = list[0].split(';');
-        if(actions.length() < 3) return;
+        if(actions.length() < 4) return;
         movex = actions[0].toDouble();
         movey = actions[1].toDouble();
         sprint = (actions[2] == "1");
+        divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
 
 
         //w sumie tego chyba nie trzeba robic bo nic tu nie zmieniam
