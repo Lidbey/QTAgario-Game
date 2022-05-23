@@ -25,6 +25,7 @@ private:
     double movex=0;
     double movey=0;
     bool sprint=false;
+    bool divide=false;
     bool disconnected=false;
 
 private slots:

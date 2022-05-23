@@ -32,10 +32,11 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
+  //  ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
 
     //zalacz petle programu na 25ms
     timer.start(25);
+    timerSpace.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
     connect(&socket, &QTcpSocket::disconnected, this, [=](){
         this->disconnect();
@@ -58,24 +59,36 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
     {
         if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Space)
         {
-            space = true;
+            if(!timerSpace.isActive()) space = true;
         }
     }
     else if(event->type()==QEvent::KeyRelease)
     {
         if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Space)
         {
-            space = false;
+        //    space = false;
+        }
+    }
+    else if (event->type() == QEvent::MouseButtonPress)
+    {
+        if(static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+        {
+            mouseClick = true;
+        }
+        }
+    else if(event->type() == QEvent::MouseButtonRelease)
+    {
+        if(static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
+        {
+            mouseClick = false;
         }
     }
     return QWidget::eventFilter(target, event);
 }
 
-
 //wyslij dane(wywoluje sie co 25ms)
 void MainClass::sendData()
 {
-
     //szukam siebie w calej liscie graczy ktora mam
     int id = searchForPlayer(this->id);
     if(id==-1) return;
@@ -90,7 +103,7 @@ void MainClass::sendData()
     //takie troche uproszczenie, aby dalo sie zatrzymac w miejscu gdy myszka jest naprawde blisko srodka
     if(abs(diffx)+abs(diffy) < 0.05)
     {
-        sendState(space, 0, 0);
+        sendState(mouseClick, space, 0, 0);
         return;
     }
 
@@ -102,11 +115,11 @@ void MainClass::sendData()
     //a to dlugosc tego wektora
     double scaleFactor = sqrt(diffx*diffx+diffy*diffy);
     if(scaleFactor > 100)
-        sendState(space, (double)diffx/scaleFactor, (double)diffy/scaleFactor);
+        sendState(mouseClick, space, (double)diffx/scaleFactor, (double)diffy/scaleFactor);
     //mimo wszystko, nie chce zawsze jechac na 'maxa',
     //wiec jezeli odleglosc od kursora do srodka kuli to mniej niz 100, to skaluj o wiecej (np jesli odleglosc to 50, to dziel przez 100 wiec poruszaj sie mimo wsystko 2 razy wolniej)
     else
-        sendState(space, (double)diffx/100, (double)diffy/100);
+        sendState(mouseClick, space, (double)diffx/100, (double)diffy/100);
 
 }
 
@@ -195,9 +208,13 @@ void MainClass::gatherData()
 
 //wyslij stan w formie
 //Vx;Vy;S\r\n (nie wiem czy wczesniej gdzies to pisalem, kazda wiadomosc koncze \r\n abym wiedzial jak je rozdzielic pozniej)
-void MainClass::sendState(bool space, double diffx, double diffy)
+void MainClass::sendState(bool mouseClick, bool space, double diffx, double diffy)
 {
-    socket.write((QString::number(diffx)+";"+QString::number(diffy)+";" + (space?"1":"0")+"\r\n").toUtf8());
+    socket.write((QString::number(diffx)+";"+QString::number(diffy)+";" + (mouseClick?"1":"0")+";" + (space?"1":"0")+"\r\n").toUtf8());
+    if(this->space) {
+        this->space = false;
+        timerSpace.start(3000);
+    }
 }
 
 //analizuj dane z kropek (te z funkcji gatherData)
