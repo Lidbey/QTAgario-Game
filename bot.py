@@ -23,7 +23,7 @@ def random_unit_vector() -> Tuple[float, float]:
 def simulate_movement(s: socket.socket) -> None:
     timeout = 0
     if len(sys.argv) > 4:
-        s.send(sys.argv[4])
+        s.send((sys.argv[4]+"\r\n").encode())
     while True:
         if s.recv(1024).decode() == 'Here:You are dead message' or timeout > 10:
             break

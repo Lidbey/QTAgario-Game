@@ -32,7 +32,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-  //  ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
+    ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
 
     //zalacz petle programu na 25ms
     timer.start(25);
