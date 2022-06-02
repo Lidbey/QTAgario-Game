@@ -12,6 +12,7 @@ Player::Player(int id, QObject* parent) : QObject(parent), QGraphicsEllipseItem(
 {
     this->id = id;
     this->setZValue(1);
+    timer.setSingleShot(true);
 }
 
 QRectF Player::boundingRect() const
@@ -123,4 +124,14 @@ void Player::setId(int id)
 int Player::getId()
 {
     return id;
+}
+
+bool Player::timerActive()
+{
+    return timer.isActive();
+}
+
+void Player::startTimer()
+{
+    timer.start(10000);
 }
