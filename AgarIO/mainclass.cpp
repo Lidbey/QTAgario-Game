@@ -124,7 +124,7 @@ void MainClass::gameLoop()
             Player* enemyPlayer = dynamic_cast<Player*>(colliding[i]);
             if(enemyPlayer!=nullptr)
             {
-                if((player->getId() == enemyPlayer->getId())&&(player->timerActive()||enemyPlayer->timerActive())) continue;
+                if(player->getId() == enemyPlayer->getId()) continue;
                 //Player* enemyPlayer = connectedSockets[i]->getPlayer();
                 QPointF enemyPos = enemyPlayer->scenePos();
                 QPointF allyPos = player->scenePos();
@@ -232,27 +232,6 @@ QString MainClass::prepareChangeState(QList<Dot*> changedDot)
     return data+playerData;
 }
 
-GameSocket *MainClass::findSocket(int id)
-{
-    for(GameSocket* socket: connectedSockets)
-    {
-        if(socket->getId()==id)
-            return socket;
-    }
-    return nullptr;
-}
-
-QList<GameSocket *> MainClass::findTeamMembers(int team)
-{
-    QList<GameSocket*> list;
-    for(GameSocket* socket: connectedSockets)
-    {
-        if(socket->getTeam()==team)
-            list << socket;
-    }
-    return list;
-}
-
 //obsluga nowego polaczenia do serwera
 void MainClass::newConnection()
 {
@@ -263,10 +242,17 @@ void MainClass::newConnection()
     GameSocket* gameSocket = new GameSocket(id, socket);
     connectedSockets.append(gameSocket);
     scene->addItem(gameSocket->getPlayer());
-    connect(gameSocket, &GameSocket::addBots, this, &MainClass::playerDivide);
-    connect(gameSocket, &GameSocket::tactic, this, &MainClass::tactic);
-    connect(gameSocket, &GameSocket::setTeamSig, this, &MainClass::setTeam);
     gameSocket->getPlayer()->setPos(rand()%(RATIO*WIDTH), rand()%(RATIO*HEIGHT));
+
+    connect(gameSocket, &GameSocket::addBots, this, [=](int team){
+        QProcess* process = new QProcess();
+        currentProcesses << process;
+        process->setProgram("python");
+        process->setArguments({"./bot.py", "127.0.0.1", this->port, "1", QString::number(team)});
+        process->start();
+        for(int i=0; i<15; i++)
+            gameSocket->getPlayer()->minusSize();
+    });
 }
 
 void MainClass::addBots()
@@ -276,45 +262,4 @@ void MainClass::addBots()
     process->setProgram("python");
     process->setArguments({"./bot.py", "127.0.0.1", this->port, QString::number(ui->numBots->value())});
     process->start();
-}
-
-void MainClass::playerDivide(int team, int player)
-{
-    GameSocket* socket = findSocket(player);
-    if(socket->getPlayer()->getSize()<100) return;
-    QProcess* process = new QProcess();
-    currentProcesses << process;
-    process->setProgram("python");
-    process->setArguments({"./bot.py", "127.0.0.1", this->port, "1", QString::number(team)});
-    process->start();
-    socket->getPlayer()->addSize(-socket->getPlayer()->getSize()/2+1);
-    socket->saveSize(socket->getPlayer()->getSize());
-}
-
-void MainClass::tactic(int team, int player, int tactic, QStringList args)
-{
-    QList<GameSocket*> teamMembers = findTeamMembers(team);
-    for(GameSocket* socket: teamMembers)
-    {
-        qDebug() << ("T;"+QString::number(tactic)+";"+args.join(";"));
-        socket->sendState(("T;"+QString::number(tactic)+";"+args.join(";")).toUtf8());
-    }
-}
-
-void MainClass::setTeam(int team)
-{
-    GameSocket* lead = dynamic_cast<GameSocket*>(sender());
-    lead->setTeam(team);
-    QList<GameSocket*> teamMembers = findTeamMembers(team);
-    for(GameSocket* socket: teamMembers)
-    {
-        int i = socket->getSavedSize();
-        if(i!=0)
-        {
-            lead->getPlayer()->addSize(i);
-            lead->getPlayer()->setPos(socket->getPlayer()->pos().x()+rand()%200-50,
-                                      socket->getPlayer()->pos().y()+rand()%200-50);
-            lead->setMovement(socket->getMovex(), socket->getMovey());
-        }
-    }
 }

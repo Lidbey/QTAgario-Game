@@ -71,40 +71,6 @@ bool GameSocket::isOk()
     return !player->dead() && socket->isOpen() && !disconnected;
 }
 
-void GameSocket::saveSize(int size)
-{
-    this->savedSize=size;
-}
-
-int GameSocket::getSavedSize()
-{
-    int ret=savedSize;
-    savedSize=0;
-    return ret;
-}
-
-void GameSocket::setTeam(int team)
-{
-    this->teamNumber = team;
-    this->player->setId(team);
-}
-
-void GameSocket::setMovement(double movex, double movey)
-{
-    this->movex = movex;
-    this->movey = movey;
-}
-
-double GameSocket::getMovex()
-{
-    return movex;
-}
-
-double GameSocket::getMovey()
-{
-    return movey;
-}
-
 //czytaj przychodzace dane, musi byc bufor bo tcp czasem ucina pakiety
 //tj jakby przyszlo np. ...\r\nABC...DEF...GHI\r\nEJK
 //to wiem, ze ABCEFGHI to jedna wiadomosc (bo jest pomiedzy kolejnymi \r\n)
@@ -122,37 +88,28 @@ void GameSocket::read()
             buffer=list.last();
         //jesli nie ma nic
         if(list.isEmpty()) return;
-        for(int i=0; i<list.length()-1; i++)
+        //splittuje po ';', bo dane przychodza w formie Vx;Vy;S
+        //gdzie Vx to skladowa X wektora ruchu,
+        //Vy skladowa Y wektora ruchu
+        //S to 1 albo 0 w zaleznosci czy mam sprinta czy nie
+        QStringList actions = list[0].split(';');
+        if(actions.length() == 4)
         {
-            QString item = list[i];
-            //splittuje po ';', bo dane przychodza w formie Vx;Vy;S
-            //gdzie Vx to skladowa X wektora ruchu,
-            //Vy skladowa Y wektora ruchu
-            //S to 1 albo 0 w zaleznosci czy mam sprinta czy nie
-            QStringList actions = item.split(';');
+            movex = actions[0].toDouble();
+            movey = actions[1].toDouble();
+            sprint = (actions[2] == "1");
+            divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
 
-            if(actions[0]=="T")
-            {
-                emit tactic(teamNumber, actions[1].toInt(), this->id, actions.mid(2));
-            }
-            else if(actions.length() == 4)
-            {
-                movex = actions[0].toDouble();
-                movey = actions[1].toDouble();
-                sprint = (actions[2] == "1");
-                divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
-
-                if(divide)
-                    emit addBots(teamNumber, this->id);
-            }
-            else if(actions.length() == 1)
-            {
-                emit setTeamSig(actions[0].toInt());
-                player->startTimer();
-            }
-
-            //w sumie tego chyba nie trzeba robic bo nic tu nie zmieniam
-            player->update();
+            if(divide)
+                emit addBots(teamNumber);
         }
+        else if(actions.length() == 1)
+        {
+            this->teamNumber = actions[0].toInt();
+            this->player->setId(teamNumber);
+        }
+
+        //w sumie tego chyba nie trzeba robic bo nic tu nie zmieniam
+        player->update();
     }
 }

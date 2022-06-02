@@ -18,12 +18,6 @@ public:
     int getId();
     int getTeam();
     bool isOk();
-    void saveSize(int size);
-    int getSavedSize();
-    void setTeam(int team);
-    void setMovement(double movex, double movey);
-    double getMovex();
-    double getMovey();
 private:
     QTcpSocket* socket;
     Player* player;
@@ -34,16 +28,13 @@ private:
     bool sprint=false;
     bool divide=false;
     bool disconnected=false;
-    int savedSize=0;
 
     int teamNumber;
 
 private slots:
     void read();
 signals:
-    void addBots(int team, int caller);
-    void tactic(int team, int tactic, int caller, QStringList args);
-    void setTeamSig(int team);
+    void addBots(int team);
 
 };
 

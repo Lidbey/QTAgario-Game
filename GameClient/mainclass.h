@@ -35,11 +35,15 @@ private:
     Ui::MainClass *ui;
     QTimer timer;
     QTimer timerSpace;
+    QTimer timerWClicked;
     void sendData();
     QVector<QGraphicsItem*> items;
     QList<Dot*> dots;
     double diffx;
     double diffy;
+    double botDiffx;
+    double botDiffy;
+    bool wClicked;
     bool space;
     bool mouseClick;
     int id;

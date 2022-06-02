@@ -40,23 +40,20 @@ private:
 
     QString port;
 
-    qreal calcDistance(QPointF, QPointF);
 
     void gameLoop();
     QString prepareGameState();
     QString preparePlayerData();
     QString prepareChangeState(QList<Dot*> changed);
 
+
+    qreal calcDistance(QPointF, QPointF);
+
     QList<QProcess*> currentProcesses;
-    GameSocket* findSocket(int id);
-    QList<GameSocket*> findTeamMembers(int team);
 
 private slots:
     void newConnection();
     void addBots();
-    void playerDivide(int team, int player);
-    void tactic(int team, int player, int tactic, QStringList args);
-    void setTeam(int team);
 };
 
 #endif // MAINCLASS_H

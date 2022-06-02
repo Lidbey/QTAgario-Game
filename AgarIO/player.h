@@ -2,7 +2,6 @@
 #define PLAYER_H
 
 #include <QGraphicsEllipseItem>
-#include <QTimer>
 
 class Player : public QObject, public QGraphicsEllipseItem
 {
@@ -18,8 +17,6 @@ public:
     bool dead();
     void setId(int id);
     int getId();
-    bool timerActive();
-    void startTimer();
 
 public slots:
     void action(bool, double, double);
@@ -35,7 +32,6 @@ private:
     double sqrt_size=0;
     bool isDead=false;
     int id;
-    QTimer timer;
 };
 
 #endif // PLAYER_H
