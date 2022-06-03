@@ -61,6 +61,10 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
         {
             if(!timerSpace.isActive()) space = true;
         }
+        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_W)
+        {
+             if(!timerWClicked.isActive()) wClicked = true;
+        }
     }
     else if(event->type()==QEvent::KeyRelease)
     {
@@ -68,14 +72,18 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
         {
         //    space = false;
         }
+        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_W)
+        {
+      //      wClicked = false;
+        }
     }
-    else if (event->type() == QEvent::MouseButtonPress)
+    else if(event->type() == QEvent::MouseButtonPress)
     {
         if(static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
         {
             mouseClick = true;
         }
-        }
+    }
     else if(event->type() == QEvent::MouseButtonRelease)
     {
         if(static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
@@ -99,6 +107,9 @@ void MainClass::sendData()
     QPointF relativePos = ui->graphicsView->mapToScene(pos);
     int diffx = relativePos.x() - player->pos().x();
     int diffy = relativePos.y() - player->pos().y();
+
+    botDiffx = relativePos.x();
+    botDiffy = relativePos.y();
 
     //takie troche uproszczenie, aby dalo sie zatrzymac w miejscu gdy myszka jest naprawde blisko srodka
     if(abs(diffx)+abs(diffy) < 0.05)
@@ -207,13 +218,18 @@ void MainClass::gatherData()
 }
 
 //wyslij stan w formie
-//Vx;Vy;S\r\n (nie wiem czy wczesniej gdzies to pisalem, kazda wiadomosc koncze \r\n abym wiedzial jak je rozdzielic pozniej)
+//Vx;Vy;S;D\r\n (nie wiem czy wczesniej gdzies to pisalem, kazda wiadomosc koncze \r\n abym wiedzial jak je rozdzielic pozniej)
 void MainClass::sendState(bool mouseClick, bool space, double diffx, double diffy)
 {
-    socket.write((QString::number(diffx)+";"+QString::number(diffy)+";" + (mouseClick?"1":"0")+";" + (space?"1":"0")+"\r\n").toUtf8());
+    socket.write((QString::number(diffx) + ";"+QString::number(diffy) + ";" + (mouseClick?"1":"0")+";" + (space?"1":"0") + "\r\n").toUtf8());
     if(this->space) {
         this->space = false;
         timerSpace.start(3000);
+    }
+    if(this->wClicked) {
+        this->wClicked = false;
+        timerWClicked.start(3000);
+        socket.write(("T;1;" + QString::number(this->botDiffx) + ";" + QString::number(this->botDiffy) + "\r\n").toUtf8());
     }
 }
 
