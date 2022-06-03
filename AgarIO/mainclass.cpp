@@ -286,6 +286,9 @@ void MainClass::playerDivide(int team, int player)
     currentProcesses << process;
     process->setProgram("python");
     process->setArguments({"./bot.py", "127.0.0.1", this->port, "1", QString::number(team)});
+    connect(process, &QProcess::readyReadStandardError, this, [=](){
+        qDebug() << process->readAllStandardError();
+    });
     process->start();
     socket->getPlayer()->addSize(-socket->getPlayer()->getSize()/2+1);
     socket->saveSize(socket->getPlayer()->getSize());

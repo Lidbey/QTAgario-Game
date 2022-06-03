@@ -112,7 +112,7 @@ double GameSocket::getMovey()
 void GameSocket::read()
 {
     buffer += socket->readAll();
-    qDebug() << buffer;
+    //qDebug() << buffer;
     if(buffer.contains("\r\n"))
     {
         QStringList list = buffer.split("\r\n");
