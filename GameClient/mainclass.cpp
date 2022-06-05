@@ -37,6 +37,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     //zalacz petle programu na 25ms
     timer.start(25);
     timerSpace.setSingleShot(true);
+    timerWClicked.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
     connect(&socket, &QTcpSocket::disconnected, this, [=](){
         this->disconnect();

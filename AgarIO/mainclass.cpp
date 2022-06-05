@@ -289,6 +289,12 @@ void MainClass::playerDivide(int team, int player)
     connect(process, &QProcess::readyReadStandardError, this, [=](){
         qDebug() << process->readAllStandardError();
     });
+    connect(process, &QProcess::readyReadStandardOutput, this, [=](){
+        qDebug() << process->readAllStandardOutput();
+    });
+    connect(process, &QProcess::readyRead, this, [=](){
+        qDebug() << process->readAll();
+    });
     process->start();
     socket->getPlayer()->addSize(-socket->getPlayer()->getSize()/2+1);
     socket->saveSize(socket->getPlayer()->getSize());

@@ -52,7 +52,7 @@ def simulate_movement(s: socket.socket) -> None:
 
         if message == 'Here:You are dead message':
             break
-
+        print(message)
         if 'T' in message:
             message = message.split(';')
             tactic = int(message[1])
@@ -60,7 +60,8 @@ def simulate_movement(s: socket.socket) -> None:
                 dest_x = message[2]
                 dest_y = message[3]
                 x, y = unit_vector_to_coords(dest_x, dest_y)
-                s.send(f"{x};{y};{0};0\r\n".encode())
+                s.send(f"{x};{y};{0};0\r\n".encode())    
+            print('tactic',tactic)
 
         if 'PPPP' in message and 'OOOO' in message:
             tmp = str(message[4:]).split('\t')
@@ -69,8 +70,10 @@ def simulate_movement(s: socket.socket) -> None:
                 if player_data[0] == ID:
                     my_x = int(player_data[1])
                     my_y = int(player_data[2])
+            print('my_x, my_y', my_x, my_y)
 
         if tactic == 1:
+            print('in tactic11',my_x, my_y, dest_x, dest_y)
             if at_destination(my_x, my_y, dest_x, dest_y):
                 tactic = 0
                 break
