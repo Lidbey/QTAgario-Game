@@ -40,6 +40,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     timerWClicked.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
     connect(&socket, &QTcpSocket::disconnected, this, [=](){
+        if(end) return;
         this->disconnect();
         QMessageBox::information(this, "Agar.IO", "Game lost!", QMessageBox::Ok);
         qApp->quit();
@@ -150,6 +151,14 @@ void MainClass::gatherData()
     //znowu sytuacja z buforem, czytaj serwer tam wytlumaczone
     buffer+=socket.readAll();
     qDebug() << buffer;
+
+    if(buffer.contains("GAME WON!\r\n"))
+    {
+        end=true;
+        this->disconnect();
+        QMessageBox::information(this, "Agar.IO", "Game won! Congratulations!", QMessageBox::Ok);
+        qApp->quit();
+    }
     //jesli jest "ID" to znaczy, ze to pierwsza dana ktora przyszla a wiec informacja o tym, ktorym ID jest klient(bardzo wazne!)
     if(buffer.contains("ID") && buffer.contains("\r\n"))
     {

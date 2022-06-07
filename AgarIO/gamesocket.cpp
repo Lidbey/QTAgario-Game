@@ -143,7 +143,10 @@ void GameSocket::read()
                 divide = (actions[3] == "1"); // ADDED - 1 jesli klinieta spacja, 0 jesli nie
 
                 if(divide)
+                {
+                    player->setLeader();
                     emit addBots(teamNumber, this->id);
+                }
             }
             else if(actions.length() == 1)
             {

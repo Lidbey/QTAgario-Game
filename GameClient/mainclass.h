@@ -49,6 +49,7 @@ private:
     int id;
     QTcpSocket socket;
     QString buffer="";
+    bool end=false;
 
     void sendState(bool mouseClick, bool space, double diffx, double diffy);
     void analyzeDotData(QString);

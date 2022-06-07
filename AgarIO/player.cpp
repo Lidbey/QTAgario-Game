@@ -135,3 +135,13 @@ void Player::startTimer()
 {
     timer.start(10000);
 }
+
+bool Player::isLeader()
+{
+    return leader;
+}
+
+void Player::setLeader()
+{
+    this->leader = true;
+}

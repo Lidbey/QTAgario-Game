@@ -20,6 +20,8 @@ public:
     int getId();
     bool timerActive();
     void startTimer();
+    bool isLeader();
+    void setLeader();
 
 public slots:
     void action(bool, double, double);
@@ -36,6 +38,8 @@ private:
     bool isDead=false;
     int id;
     QTimer timer;
+
+    bool leader = false;
 };
 
 #endif // PLAYER_H

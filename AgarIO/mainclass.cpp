@@ -73,6 +73,26 @@ MainClass::~MainClass()
 void MainClass::gameLoop()
 {
     QList<Dot*> changedDots;
+    QSet<int> teams;
+    int sumSize=0;
+    for(GameSocket* socket: connectedSockets)
+    {
+        sumSize+=socket->getPlayer()->getSize();
+        teams << socket->getPlayer()->getId();
+        if(teams.size() > 1)
+            break;
+    }
+    if(teams.size()==1)
+    {
+        qDebug() << teams;
+        qDebug() << sumSize;
+        if(sumSize>5000)
+        {
+            for(GameSocket* socket: connectedSockets)
+                socket->sendState("GAME WON!\r\n");
+            return;
+        }
+    }
     //dla kazdego polaczonego socketa:
     for(int i=connectedSockets.length()-1; i>=0; i--)
     {
@@ -124,28 +144,39 @@ void MainClass::gameLoop()
             Player* enemyPlayer = dynamic_cast<Player*>(colliding[i]);
             if(enemyPlayer!=nullptr)
             {
-                if((player->getId() == enemyPlayer->getId())&&(player->timerActive()||enemyPlayer->timerActive())) continue;
-                //Player* enemyPlayer = connectedSockets[i]->getPlayer();
                 QPointF enemyPos = enemyPlayer->scenePos();
                 QPointF allyPos = player->scenePos();
                 qreal distance = calcDistance(enemyPos, allyPos);
                 double enemySize = enemyPlayer->getSqrtSize();
                 double allySize = player->getSqrtSize();
-                if(allySize > enemySize)
+                if(distance > enemySize && distance > allySize) continue;
+                if(enemyPlayer->getId() == player->getId())
                 {
-                    if(allySize > distance)
+                    if(player->timerActive() || enemyPlayer->timerActive()) continue;
+                    if(player->isLeader())
                     {
                         player->addSize(enemyPlayer->getSize());
                         enemyPlayer->setDead();
+                        continue;
                     }
-                }
-                else if (allySize < enemySize)
-                {
-                    if(enemySize > distance)
+                    else if(enemyPlayer->isLeader())
                     {
                         enemyPlayer->addSize(player->getSize());
                         player->setDead();
+                        continue;
                     }
+                }
+                if(allySize > enemySize)
+                {
+                    player->addSize(enemyPlayer->getSize());
+                    enemyPlayer->setDead();
+                    continue;
+                }
+                else if (allySize < enemySize)
+                {
+                    enemyPlayer->addSize(player->getSize());
+                    player->setDead();
+                    continue;
                 }
             }
         }
