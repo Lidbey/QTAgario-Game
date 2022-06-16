@@ -140,8 +140,10 @@ void MainClass::gameLoop()
 
             //kolizja z graczami
             Player* enemyPlayer = dynamic_cast<Player*>(colliding[i]);
+            if(player->isImmortal()) continue;
             if(enemyPlayer!=nullptr)
             {
+                if(enemyPlayer->isImmortal()) continue;
                 QPointF enemyPos = enemyPlayer->scenePos();
                 QPointF allyPos = player->scenePos();
                 qreal distance = calcDistance(enemyPos, allyPos);

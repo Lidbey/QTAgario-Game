@@ -74,21 +74,6 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
             if(!timerQClicked.isActive()) qClicked = true;
         }
     }
-    else if(event->type()==QEvent::KeyRelease)
-    {
-        if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Space)
-        {
-        //    space = false;
-        }
-        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_W)
-        {
-      //      wClicked = false;
-        }
-        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Q)
-        {
-            //qClicked = false;
-        }
-    }
     else if(event->type() == QEvent::MouseButtonPress)
     {
         if(static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton)
@@ -317,7 +302,7 @@ void MainClass::analyzePlayerData(QString data)
 
     int id = searchForPlayer(this->id);
     if(id==-1) return;
-    Player* player = this->players[id];
+    //Player* player = this->players[id];
     /*QRectF rect(player->pos().x()-WIDTH/2-player->getSqrtSize()/3, player->pos().y()-HEIGHT/2-player->getSqrtSize()/3, WIDTH+player->getSqrtSize()*2/3, HEIGHT+player->getSqrtSize()*2/3);
     ui->graphicsView->setSceneRect(rect);
     ui->graphicsView->centerOn(rect.center());

@@ -18,10 +18,11 @@ public:
     bool dead();
     void setId(int id);
     int getId();
-    bool timerActive();
-    void startTimer();
     bool isLeader();
     void setLeader();
+    bool isImmortal();
+    void startTimer();
+    bool timerActive();
 
 public slots:
     void action(bool, double, double);
@@ -32,13 +33,13 @@ protected:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 private:
+    QTimer timer;
+    QTimer immortalTimer;
     qreal angle;
     int size=0;
     double sqrt_size=0;
     bool isDead=false;
     int id;
-    QTimer timer;
-
     bool leader = false;
 };
 

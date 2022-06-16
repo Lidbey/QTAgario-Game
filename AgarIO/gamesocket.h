@@ -12,14 +12,19 @@ public:
     ~GameSocket() override;
     Player* getPlayer();
     QTcpSocket* getSocket();
+
     bool actionValid();
     void doAction();
     void sendState(QString gameState);
+
     int getId();
     int getTeam();
+
     bool isOk();
+
     void saveSize(int size);
     int getSavedSize();
+
     void setTeam(int team);
     void setMovement(double movex, double movey);
     double getMovex();
@@ -28,14 +33,15 @@ private:
     QTcpSocket* socket;
     Player* player;
     QString buffer;
+
     int id;
     double movex=0;
     double movey=0;
     bool sprint=false;
     bool divide=false;
-    bool disconnected=false;
     int savedSize=0;
 
+    bool disconnected=false;
     int teamNumber;
 
 private slots:

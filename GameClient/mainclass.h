@@ -39,7 +39,6 @@ private:
     QTimer timerSpace;
     QTimer timerWClicked;
     QTimer timerQClicked;
-    void sendData();
     QVector<QGraphicsItem*> items;
     QList<Dot*> dots;
     double diffx;
@@ -55,10 +54,10 @@ private:
     QString buffer="";
     bool end=false;
 
+    void sendData();
     void sendState(bool mouseClick, bool space, double diffx, double diffy);
     void analyzeDotData(QString);
     void analyzePlayerData(QString);
-
 
     void setGraphicsView();
     void gatherData();

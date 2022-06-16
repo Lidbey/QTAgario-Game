@@ -36,8 +36,8 @@ private:
     QVector<QGraphicsItem*> items;
     QList<GameSocket*> connectedSockets;
     QList<Dot*> dots;
-    int playerId=0;
 
+    int playerId=0;
     QString port;
 
     qreal calcDistance(QPointF, QPointF);

@@ -13,6 +13,13 @@ Player::Player(int id, QObject* parent) : QObject(parent), QGraphicsEllipseItem(
     this->id = id;
     this->setZValue(1);
     timer.setSingleShot(true);
+    immortalTimer.setSingleShot(true);
+    immortalTimer.start(2500);
+}
+
+bool Player::isImmortal()
+{
+    return immortalTimer.isActive();
 }
 
 QRectF Player::boundingRect() const
