@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QTcpSocket>
 #include "dot.h"
+#include <QRandomGenerator>
 
 namespace Ui {
 class MainClass;
@@ -33,6 +34,7 @@ protected:
 
 private:
     Ui::MainClass *ui;
+    QRandomGenerator rnd;
     QTimer timer;
     QTimer timerSpace;
     QTimer timerWClicked;

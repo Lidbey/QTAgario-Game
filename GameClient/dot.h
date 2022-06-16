@@ -6,7 +6,7 @@
 class Dot : public QGraphicsEllipseItem
 {
 public:
-    Dot();
+    Dot(QColor color);
     void disable();
     void enable();
 protected:
@@ -16,6 +16,7 @@ protected:
 
 private:
     bool active;
+    QColor color;
 
 };
 

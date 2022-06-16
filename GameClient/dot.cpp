@@ -1,8 +1,10 @@
 #include "dot.h"
 #include <QPainter>
+#include <QTime>
 #define RADIUS 10
-Dot::Dot() : QGraphicsEllipseItem()
+Dot::Dot(QColor color) : QGraphicsEllipseItem()
 {
+    this->color = color;
 }
 
 QRectF Dot::boundingRect() const
@@ -12,7 +14,7 @@ QRectF Dot::boundingRect() const
 
 void Dot::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    painter->setBrush(Qt::red);
+    painter->setBrush(color);
     painter->drawEllipse(QRect(-RADIUS,-RADIUS,RADIUS,RADIUS));
 }
 

@@ -271,7 +271,7 @@ void MainClass::analyzeDotData(QString data)
         QStringList splitted = dotsData[i].split(';');
         if(splitted.length() != 3) return;
         //stworz kropke, dodaj na scene, ustaw wspolrzedne)
-        Dot* dot = new Dot();
+        Dot* dot = new Dot(QColor(rnd.bounded(255),rnd.bounded(255),rnd.bounded(255)));
         dot->setPos(splitted[0].toDouble(), splitted[1].toDouble());
         if(splitted[2]=="1")
         {
