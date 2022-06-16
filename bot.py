@@ -47,44 +47,67 @@ def simulate_movement(s: socket.socket) -> None:
     if len(sys.argv) > 4:
         s.send((sys.argv[4]+"\r\n").encode())
 
+    buffer = ''
+    message = ''
+    player_data = []
+    sleep_time = time.time()
+    dest_x = 0
+    speed = 0
+    dest_y = 0
     while True:
-        message = str(s.recv(1024).decode())
+        is_message_complete = False
+        while is_message_complete is False:
+            buffer += str(s.recv(8).decode())
+            messages_list = buffer.split('\r\n')
+            if len(messages_list) > 1:
+                buffer = '\r\n'.join(messages_list[1:])
+                message = messages_list[0]
+                is_message_complete = True
 
-        if message == 'Here:You are dead message':
-            break
-        print(message)
         if 'T' in message:
             message = message.split(';')
             tactic = int(message[1])
             if tactic == 1:
-                dest_x = message[2]
-                dest_y = message[3]
-                x, y = unit_vector_to_coords(dest_x, dest_y)
-                s.send(f"{x};{y};{0};0\r\n".encode())    
-            print('tactic',tactic)
+                dest_x = float(message[2])
+                dest_y = float(message[3])
+                x, y = unit_vector_to_coords(dest_x - my_x, dest_y - my_y)
+                s.send(f"{x};{y};{0};0\r\n".encode())
+                speed = 0
+            if tactic == 2:
+                dest_player_id = int(message[2])
+                speed = 1
 
         if 'PPPP' in message and 'OOOO' in message:
-            tmp = str(message[4:]).split('\t')
-            for player in tmp:
+            after_pppp = message[
+                message.index('PPPP') + len('PPPP'): message.index('OOOO')-1
+            ]
+            all_players = str(after_pppp).split('\t')
+            for player in all_players:
                 player_data = player.split(';')
-                if player_data[0] == ID:
-                    my_x = int(player_data[1])
-                    my_y = int(player_data[2])
-            print('my_x, my_y', my_x, my_y)
 
-        if tactic == 1:
-            print('in tactic11',my_x, my_y, dest_x, dest_y)
-            if at_destination(my_x, my_y, dest_x, dest_y):
-                tactic = 0
-                break
+                if tactic == 2 and int(player_data[0]) == dest_player_id:
+                    dest_x = float(player_data[1])
+                    dest_y = float(player_data[2])
+
+                if int(player_data[0]) == ID:
+                    my_x = float(player_data[1])
+                    my_y = float(player_data[2])
 
         if tactic == 0:
-            x, y = random_unit_vector()
-            speed = 0
-            s.send(f"{x};{y};{speed};0\r\n".encode())
-            time.sleep(random.randint(3, 8))
+            current_time = time.time()
+            if current_time >= sleep_time:
+                sleep_time = current_time + random.randint(3, 8)
+                x, y = random_unit_vector()
+                speed = 0
+                s.send(f"{x};{y};{speed};0\r\n".encode())
 
-    p.sock.close()
+        if tactic == 1:
+            if at_destination(my_x, my_y, dest_x, dest_y):
+                tactic = 0
+
+        if tactic == 2:
+            x, y = unit_vector_to_coords(dest_x - my_x, dest_y - my_y)
+            s.send(f"{x};{y};{speed};0\r\n".encode())
 
 
 if __name__ == "__main__":

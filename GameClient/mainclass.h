@@ -36,6 +36,7 @@ private:
     QTimer timer;
     QTimer timerSpace;
     QTimer timerWClicked;
+    QTimer timerQClicked;
     void sendData();
     QVector<QGraphicsItem*> items;
     QList<Dot*> dots;
@@ -43,9 +44,10 @@ private:
     double diffy;
     double botDiffx;
     double botDiffy;
-    bool wClicked;
-    bool space;
-    bool mouseClick;
+    bool wClicked=false;
+    bool space=false;
+    bool mouseClick=false;
+    bool qClicked;
     int id;
     QTcpSocket socket;
     QString buffer="";

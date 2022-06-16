@@ -31,6 +31,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->scale(1.30/RATIO, 1.30/RATIO);
 
     ui->graphicsView->setStyleSheet("background-image: url(\"./BG.jpg\")");
 
@@ -38,6 +39,7 @@ MainClass::MainClass(QString address, int port, QWidget *parent)
     timer.start(25);
     timerSpace.setSingleShot(true);
     timerWClicked.setSingleShot(true);
+    timerQClicked.setSingleShot(true);
     connect(&timer, &QTimer::timeout, this, &MainClass::sendData);
     connect(&socket, &QTcpSocket::disconnected, this, [=](){
         if(end) return;
@@ -67,6 +69,10 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
         {
              if(!timerWClicked.isActive()) wClicked = true;
         }
+        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Q)
+        {
+            if(!timerQClicked.isActive()) qClicked = true;
+        }
     }
     else if(event->type()==QEvent::KeyRelease)
     {
@@ -77,6 +83,10 @@ bool MainClass::eventFilter(QObject* target, QEvent* event)
         else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_W)
         {
       //      wClicked = false;
+        }
+        else if(static_cast<QKeyEvent*>(event)->key()==Qt::Key_Q)
+        {
+            //qClicked = false;
         }
     }
     else if(event->type() == QEvent::MouseButtonPress)
@@ -240,6 +250,12 @@ void MainClass::sendState(bool mouseClick, bool space, double diffx, double diff
         this->wClicked = false;
         timerWClicked.start(3000);
         socket.write(("T;1;" + QString::number(this->botDiffx) + ";" + QString::number(this->botDiffy) + "\r\n").toUtf8());
+        qDebug() << "sent w?";
+    }
+    if(this->qClicked) {
+        this->qClicked = false;
+        timerQClicked.start(3000);
+        socket.write(("T;2;" +QString::number(this->id) + "\r\n").toUtf8());
     }
 }
 
@@ -302,10 +318,10 @@ void MainClass::analyzePlayerData(QString data)
     int id = searchForPlayer(this->id);
     if(id==-1) return;
     Player* player = this->players[id];
-    QRectF rect(player->pos().x()-WIDTH/2-player->getSqrtSize()/3, player->pos().y()-HEIGHT/2-player->getSqrtSize()/3, WIDTH+player->getSqrtSize()*2/3, HEIGHT+player->getSqrtSize()*2/3);
+    /*QRectF rect(player->pos().x()-WIDTH/2-player->getSqrtSize()/3, player->pos().y()-HEIGHT/2-player->getSqrtSize()/3, WIDTH+player->getSqrtSize()*2/3, HEIGHT+player->getSqrtSize()*2/3);
     ui->graphicsView->setSceneRect(rect);
     ui->graphicsView->centerOn(rect.center());
-    ui->graphicsView->fitInView(rect, Qt::AspectRatioMode::KeepAspectRatio);
+    ui->graphicsView->fitInView(rect, Qt::AspectRatioMode::KeepAspectRatio);*/
 }
 
 int MainClass::searchForPlayer(int id)

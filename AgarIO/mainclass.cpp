@@ -84,8 +84,6 @@ void MainClass::gameLoop()
     }
     if(teams.size()==1)
     {
-        qDebug() << teams;
-        qDebug() << sumSize;
         if(sumSize>5000)
         {
             for(GameSocket* socket: connectedSockets)
@@ -317,27 +315,18 @@ void MainClass::playerDivide(int team, int player)
     currentProcesses << process;
     process->setProgram("python");
     process->setArguments({"./bot.py", "127.0.0.1", this->port, "1", QString::number(team)});
-    connect(process, &QProcess::readyReadStandardError, this, [=](){
-        qDebug() << process->readAllStandardError();
-    });
-    connect(process, &QProcess::readyReadStandardOutput, this, [=](){
-        qDebug() << process->readAllStandardOutput();
-    });
-    connect(process, &QProcess::readyRead, this, [=](){
-        qDebug() << process->readAll();
-    });
     process->start();
     socket->getPlayer()->addSize(-socket->getPlayer()->getSize()/2+1);
     socket->saveSize(socket->getPlayer()->getSize());
 }
 
-void MainClass::tactic(int team, int player, int tactic, QStringList args)
+void MainClass::tactic(int team, int tactic, int player, QStringList args)
 {
     QList<GameSocket*> teamMembers = findTeamMembers(team);
     for(GameSocket* socket: teamMembers)
     {
         qDebug() << ("T;"+QString::number(tactic)+";"+args.join(";"));
-        socket->sendState(("T;"+QString::number(tactic)+";"+args.join(";")).toUtf8());
+        socket->sendState(("T;"+QString::number(tactic)+";"+args.join(";")+"\r\n").toUtf8());
     }
 }
 

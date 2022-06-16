@@ -1,6 +1,6 @@
 #include "dot.h"
 #include <QPainter>
-#define RADIUS 5
+#define RADIUS 10
 Dot::Dot() : QGraphicsEllipseItem()
 {
 }
